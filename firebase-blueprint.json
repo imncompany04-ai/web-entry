@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Application user for custom auth",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "name": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Operator", "Viewer"] },
+        "rights": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "username", "name", "role", "rights"]
+    },
+    "Party": {
+      "title": "Party",
+      "description": "Customer or Party entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name"]
+    },
+    "LoadingEntry": {
+      "title": "Loading Entry",
+      "description": "Daily loading log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "srNo": { "type": "number" },
+        "date": { "type": "string" },
+        "entryTime": { "type": "string" },
+        "truckNo": { "type": "string" },
+        "tempoNumber": { "type": "string" },
+        "partyId": { "type": "string" },
+        "partyName": { "type": "string" },
+        "allowedWeight": { "type": "number" },
+        "quantity": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Completed", "Underloading"] },
+        "remarks": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "srNo", "date", "partyId", "partyName", "status"]
+    },
+    "Item": {
+      "title": "Item",
+      "description": "Inventory item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "isActive"]
+    },
+    "Size": {
+      "title": "Size",
+      "description": "Item size/unit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "unitType": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "unitType"]
+    },
+    "Vendor": {
+      "title": "Vendor",
+      "description": "Supplier entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "mobile": { "type": "string" },
+        "city": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "isActive"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Sales order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderNo": { "type": "string" },
+        "customerName": { "type": "string" },
+        "partyId": { "type": "string" },
+        "date": { "type": "string" },
+        "items": { "type": "array" },
+        "status": { "type": "string", "enum": ["Pending", "Completed", "Cancelled"] },
+        "remarks": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "orderNo", "customerName", "date", "status"]
+    },
+    "PurchaseOrder": {
+      "title": "Purchase Order",
+      "description": "PO to vendor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "poNo": { "type": "string" },
+        "vendorId": { "type": "string" },
+        "vendorName": { "type": "string" },
+        "date": { "type": "string" },
+        "items": { "type": "array" },
+        "isConvertedToStock": { "type": "boolean" },
+        "remarks": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "poNo", "vendorId", "vendorName", "date", "isConvertedToStock"]
+    },
+    "StockEntry": {
+      "title": "Stock Entry",
+      "description": "Inventory stock in",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "sizeId": { "type": "string" },
+        "sizeName": { "type": "string" },
+        "quantityAdded": { "type": "number" },
+        "reference": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "date", "itemId", "itemName", "sizeId", "sizeName", "quantityAdded"]
+    },
+    "DispatchEntry": {
+      "title": "Dispatch Entry",
+      "description": "Inventory stock out",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "dispatchNo": { "type": "string" },
+        "orderId": { "type": "string" },
+        "orderNo": { "type": "string" },
+        "customerName": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "sizeId": { "type": "string" },
+        "sizeName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "vehicleNo": { "type": "string" },
+        "date": { "type": "string" },
+        "remarks": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "dispatchNo", "orderId", "orderNo", "itemId", "sizeId", "quantity", "date"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "App branding settings",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "companyName": { "type": "string" },
+        "entryFontSize": { "type": "number" },
+        "pdfTemplates": { "type": "object" }
+      },
+      "required": ["companyName"]
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "User accounts" },
+    "parties": { "schema": "Party", "description": "Parties/Customers" },
+    "entries": { "schema": "LoadingEntry", "description": "Loading logs" },
+    "items": { "schema": "Item", "description": "Inventory items" },
+    "sizes": { "schema": "Size", "description": "Item sizes" },
+    "vendors": { "schema": "Vendor", "description": "Suppliers" },
+    "orders": { "schema": "Order", "description": "Sales orders" },
+    "purchaseOrders": { "schema": "PurchaseOrder", "description": "Purchase orders" },
+    "stockEntries": { "schema": "StockEntry", "description": "Stock additions" },
+    "dispatches": { "schema": "DispatchEntry", "description": "Stock dispatches" },
+    "settings/branding": { "schema": "Settings", "description": "App branding" }
+  }
+}
