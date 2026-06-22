@@ -17,7 +17,7 @@ import {
 import { AppTab, LoadingEntry, Party, User, Permission, SyncStatus, AppSettings, Item, Size, Vendor, Order, PurchaseOrder, StockEntry, DispatchEntry } from './types';
 import { db, auth } from './firebase';
 import { signInAnonymously } from 'firebase/auth';
-import { collection, doc, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, getDocs, onSnapshot } from 'firebase/firestore';
 import EntrySheet from './components/EntrySheet';
 import PartyMaster from './components/PartyMaster';
 import Reports from './components/Reports';
@@ -190,6 +190,7 @@ const App: React.FC = () => {
   // Firebase auth & data synchronization
   useEffect(() => {
     let active = true;
+    const unsubscribes: (() => void)[] = [];
 
     const setupAndSync = async () => {
       try {
@@ -290,6 +291,46 @@ const App: React.FC = () => {
 
         setSyncStatus('online');
         setLastSyncTime(Date.now());
+
+        // Setup real-time snapshots listeners so updates instantly reflect across other PCs/devices!
+        const setupListener = (coll: string, setter: any) => {
+          const unsub = onSnapshot(collection(db, coll), (snapshot) => {
+            const currentDeleted = JSON.parse(localStorage.getItem('itoli_deleted_doc_keys') || '[]');
+            const updatedDocs = snapshot.docs
+              .map(d => d.data())
+              .filter(item => !currentDeleted.includes(`${coll}:${item.id}`));
+            
+            setter(updatedDocs);
+            saveLocal(coll, updatedDocs);
+            setLastSyncTime(Date.now());
+          }, (err) => {
+            console.error(`Real-time snapshot listener failed for ${coll}:`, err);
+          });
+          unsubscribes.push(unsub);
+        };
+
+        setupListener('users', setUsers);
+        setupListener('entries', setEntries);
+        setupListener('parties', setParties);
+        setupListener('items', setItems);
+        setupListener('sizes', setSizes);
+        setupListener('vendors', setVendors);
+        setupListener('orders', setOrders);
+        setupListener('purchaseOrders', setPurchaseOrders);
+        setupListener('stockEntries', setStockEntries);
+        setupListener('dispatches', setDispatches);
+
+        // Real-time settings listener
+        const unsubSettings = onSnapshot(doc(db, 'settings', 'branding'), (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data() as AppSettings;
+            setSettings(data);
+            saveLocal('settings', data);
+            setLastSyncTime(Date.now());
+          }
+        });
+        unsubscribes.push(unsubSettings);
+
       } catch (err) {
         console.error("Failed to connect or sync with Firebase:", err);
         setSyncStatus('offline');
@@ -304,6 +345,7 @@ const App: React.FC = () => {
 
     return () => {
       active = false;
+      unsubscribes.forEach(unsub => unsub());
     };
   }, [isOnline]);
 

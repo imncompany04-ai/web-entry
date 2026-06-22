@@ -1,7 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from './firebase-applet-config.json';
+import defaultConfigs from './firebase-applet-config.json';
+
+// Support Vercel/Vite environment variables fallback or use JSON config
+const metaEnv = (import.meta as any).env || {};
+const firebaseConfig = {
+  apiKey: metaEnv.VITE_FIREBASE_API_KEY || defaultConfigs.apiKey,
+  authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || defaultConfigs.authDomain,
+  projectId: metaEnv.VITE_FIREBASE_PROJECT_ID || defaultConfigs.projectId,
+  storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || defaultConfigs.storageBucket,
+  messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || defaultConfigs.messagingSenderId,
+  appId: metaEnv.VITE_FIREBASE_APP_ID || defaultConfigs.appId,
+  firestoreDatabaseId: metaEnv.VITE_FIREBASE_DATABASE_ID || defaultConfigs.firestoreDatabaseId || "(default)"
+};
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
