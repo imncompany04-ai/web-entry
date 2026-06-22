@@ -1,10 +1,10 @@
 {
-  "projectId": "loading-sheet-itoli",
-  "appId": "1:830231173913:web:3fac41e35bd32b72ac4388",
-  "apiKey": "AIzaSyDCqnbd0ugzEvUpD2O5pHQnPaaCXu-ZRlQ",
-  "authDomain": "loading-sheet-itoli.firebaseapp.com",
+  "projectId": "itoli-sheet-e0070",
+  "appId": "1:3097625676:web:ce286fd7cdb2d50c5760e9",
+  "apiKey": "AIzaSyDqMwklbffswzUfI5xRfjVz4rmu1UYgqHk",
+  "authDomain": "itoli-sheet-e0070.firebaseapp.com",
   "firestoreDatabaseId": "(default)",
-  "storageBucket": "loading-sheet-itoli.firebasestorage.app",
-  "messagingSenderId": "830231173913",
-  "measurementId": "G-DTLVPMLB9Q"
+  "storageBucket": "itoli-sheet-e0070.firebasestorage.app",
+  "messagingSenderId": "3097625676",
+  "measurementId": "G-7N85K93HKG"
 }

@@ -18,8 +18,8 @@ const Logo: React.FC<LogoProps> = ({ className = "h-12", variant = 'default', sr
   if (!src || error) {
     return (
       <div className={`${className} flex flex-col justify-center select-none`}>
-        <span className={`text-2xl logo-font leading-none ${variant === 'white' ? 'text-white' : 'text-itoli'}`}>itoli</span>
-        <span className={`tagline-font uppercase tracking-[0.3em] ${variant === 'white' ? 'text-white/60' : 'text-itoli/60'}`}>The Tile Composer</span>
+        <span className={`text-2xl logo-font leading-none uppercase tracking-wide font-black ${variant === 'white' ? 'text-white' : 'text-stone-900'}`}>Itoli</span>
+        <span className={`tagline-font uppercase tracking-[0.25em] font-extrabold ${variant === 'white' ? 'text-white/70' : 'text-stone-500'}`}>Granito LLP</span>
       </div>
     );
   }
