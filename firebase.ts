@@ -1,10 +1,12 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import defaultConfigs from './firebase-applet-config.json';
 
 // Support Vercel/Vite environment variables fallback or use JSON config
 const metaEnv = (import.meta as any).env || {};
+
+// Standard Firebase config parameters (strictly matches FirebaseOptions)
 const firebaseConfig = {
   apiKey: metaEnv.VITE_FIREBASE_API_KEY || defaultConfigs.apiKey,
   authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || defaultConfigs.authDomain,
@@ -12,14 +14,17 @@ const firebaseConfig = {
   storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || defaultConfigs.storageBucket,
   messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || defaultConfigs.messagingSenderId,
   appId: metaEnv.VITE_FIREBASE_APP_ID || defaultConfigs.appId,
-  firestoreDatabaseId: metaEnv.VITE_FIREBASE_DATABASE_ID || defaultConfigs.firestoreDatabaseId || "(default)"
 };
 
-const app = initializeApp(firebaseConfig);
+// Separate the custom database ID to prevent TypeScript type errors on initializeApp
+const firestoreDatabaseId = metaEnv.VITE_FIREBASE_DATABASE_ID || defaultConfigs.firestoreDatabaseId || "(default)";
+
+// Prevent duplicate initialization errors during local Hot Module Replacement (HMR)
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Firestore (support optional custom databaseId if configured)
-const dbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)"
-  ? firebaseConfig.firestoreDatabaseId
+const dbId = firestoreDatabaseId && firestoreDatabaseId !== "(default)"
+  ? firestoreDatabaseId
   : undefined;
 
 export const db = dbId 

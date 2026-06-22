@@ -98,6 +98,7 @@ const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('online');
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncTrigger, setSyncTrigger] = useState<number>(0);
   const [lastSyncTime, setLastSyncTime] = useState<number>(Date.now());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -351,7 +352,7 @@ const App: React.FC = () => {
       active = false;
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [isOnline]);
+  }, [isOnline, syncTrigger]);
 
   const handleLogout = useCallback(() => {
     setCurrentUser(null);
@@ -734,9 +735,7 @@ const App: React.FC = () => {
                 onClick={() => {
                   setSyncStatus('syncing');
                   setSyncError(null);
-                  setTimeout(() => {
-                    window.dispatchEvent(new Event('online'));
-                  }, 100);
+                  setSyncTrigger(prev => prev + 1);
                 }} 
                 className="px-5 py-3.5 bg-stone-955 text-white hover:bg-stone-900 text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 whitespace-nowrap flex items-center gap-2 border border-stone-800"
               >

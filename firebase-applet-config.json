@@ -3,7 +3,7 @@
   "appId": "1:3097625676:web:ce286fd7cdb2d50c5760e9",
   "apiKey": "AIzaSyDqMwklbffswzUfI5xRfjVz4rmu1UYgqHk",
   "authDomain": "itoli-sheet-e0070.firebaseapp.com",
-  "firestoreDatabaseId": "(default)",
+  "firestoreDatabaseId": "default",
   "storageBucket": "itoli-sheet-e0070.firebasestorage.app",
   "messagingSenderId": "3097625676",
   "measurementId": "G-7N85K93HKG"
