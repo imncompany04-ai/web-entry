@@ -12,7 +12,8 @@ import {
   Database,
   Zap,
   Plus,
-  LayoutDashboard
+  LayoutDashboard,
+  AlertCircle
 } from 'lucide-react';
 import { AppTab, LoadingEntry, Party, User, Permission, SyncStatus, AppSettings, Item, Size, Vendor, Order, PurchaseOrder, StockEntry, DispatchEntry } from './types';
 import { db, auth } from './firebase';
@@ -96,6 +97,7 @@ const App: React.FC = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('online');
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<number>(Date.now());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -195,6 +197,7 @@ const App: React.FC = () => {
     const setupAndSync = async () => {
       try {
         setSyncStatus('syncing');
+        setSyncError(null);
         if (!auth.currentUser) {
           try {
             await signInAnonymously(auth);
@@ -331,9 +334,10 @@ const App: React.FC = () => {
         });
         unsubscribes.push(unsubSettings);
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to connect or sync with Firebase:", err);
         setSyncStatus('offline');
+        setSyncError(err?.message || String(err));
       }
     };
 
@@ -384,6 +388,8 @@ const App: React.FC = () => {
         const docRef = coll === 'settings' ? doc(db, 'settings', 'branding') : doc(db, coll, docId);
         setDoc(docRef, finalData).catch(err => {
           console.error(`Firestore background sync failed for ${coll}:${docId}:`, err);
+          setSyncError(err?.message || String(err));
+          setSyncStatus('offline');
         });
       }
     } catch (e) { 
@@ -430,8 +436,10 @@ const App: React.FC = () => {
       if (isOnline) {
         try {
           await deleteDoc(doc(db, coll, id));
-        } catch (e) {
+        } catch (e: any) {
           console.warn(`Could not delete doc ${coll}:${id} from Firestore, local deletion is preserved:`, e);
+          setSyncError(e?.message || String(e));
+          setSyncStatus('offline');
         }
       }
     } catch (e) { 
@@ -588,6 +596,14 @@ const App: React.FC = () => {
           </nav>
           
           <div className="flex items-center gap-4 border-l border-stone-200 pl-4 md:pl-6 relative">
+            {/* Real-time Connection Status Indicator */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-stone-100 rounded-full border border-stone-200/60 select-none">
+              <span className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-emerald-500 animate-pulse' : syncStatus === 'syncing' ? 'bg-amber-500 animate-bounce' : 'bg-rose-500'}`} />
+              <span className="text-[9px] font-black uppercase tracking-wider text-stone-600">
+                {syncStatus === 'online' ? 'Cloud Synced' : syncStatus === 'syncing' ? 'Syncing...' : 'Disconnected'}
+              </span>
+            </div>
+
             <button 
               id="profile-circle-btn"
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
@@ -646,6 +662,90 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {syncError && (
+        <div className="border-b border-rose-100 bg-rose-50/80 py-4 px-6 animate-fade-in print:hidden">
+          <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-start md:items-start justify-between gap-6">
+            <div className="flex gap-3 flex-1">
+              <div className="p-2 text-rose-600 bg-rose-100 rounded-xl shrink-0 mt-0.5">
+                <AlertCircle size={20} />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-black text-rose-950 uppercase tracking-widest flex items-center gap-2">
+                  <span>Firebase Firestore Connection Error</span>
+                  <span className="text-[10px] bg-rose-200/60 text-rose-900 px-2 py-0.5 rounded font-black">ACTION REQUIRED / પગલાં લેવા જરૂરી</span>
+                </h4>
+                
+                <p className="text-xs text-rose-800 font-medium mt-1.5 leading-relaxed">
+                  The application tried to connect, but Firebase returned: <code className="bg-rose-100 px-1.5 py-0.5 rounded font-mono font-bold text-[10px] text-rose-900 break-all">{syncError}</code>
+                </p>
+
+                {/* Specific custom troubleshooting steps for Database Not Found */}
+                {syncError.toLowerCase().includes('not found') ? (
+                  <div className="mt-4 bg-white/80 rounded-2xl p-4 border border-rose-100 space-y-4 shadow-sm">
+                    <div>
+                      <h5 className="text-xs font-black text-rose-950 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="text-amber-500">👉</span> 
+                        <span>How to fix this in your Firebase Console (તમારા Firebase માં આ રીતે ચાલુ કરો):</span>
+                      </h5>
+                      <p className="text-[11px] text-stone-500 font-bold uppercase mt-1">
+                        Your Firebase database is registered but you haven't clicked "Create Database" yet under Firestore. Let's do it now:
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-stone-700 leading-relaxed">
+                      <div className="space-y-2 bg-stone-50/50 p-3 rounded-xl border border-stone-100">
+                        <p className="font-extrabold text-stone-900 uppercase text-[10px] tracking-wider text-rose-600">🇬🇧 English Instructions</p>
+                        <ol className="list-decimal pl-4 space-y-1.5">
+                          <li>Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold">console.firebase.google.com</a> & open project <strong className="font-bold text-stone-950">itoli-sheet-e0070</strong></li>
+                          <li>On the left menu, click on <strong className="font-bold text-stone-950">Build ➜ Firestore Database</strong></li>
+                          <li>Click the prominent <strong className="font-black text-stone-950 underline">"Create database"</strong> button</li>
+                          <li>Select database ID <strong className="font-bold text-stone-950">(default)</strong> and click Next</li>
+                          <li>Choose <strong className="font-bold text-stone-950">"Start in test mode"</strong> (so other PCs can write/read data) and enable it</li>
+                          <li>Once created, come back here and click <strong className="font-bold text-stone-950">🔄 Retry Connection</strong>!</li>
+                        </ol>
+                      </div>
+
+                      <div className="space-y-2 bg-rose-50/35 p-3 rounded-xl border border-rose-100/40">
+                        <p className="font-extrabold text-stone-950 uppercase text-[10px] tracking-wider text-rose-600">🇮🇳 ગુજરાતી માર્ગદર્શન (Gujarati Instructions)</p>
+                        <ol className="list-decimal pl-4 space-y-1.5 text-stone-600">
+                          <li>સૌપ્રથમ <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-bold">console.firebase.google.com</a> ખોલો અને <strong className="font-bold text-stone-950">itoli-sheet-e0070</strong> પ્રોજેક્ટ પસંદ કરો.</li>
+                          <li>ડાબી બાજુ ના મેનુમાંથી <strong className="font-bold text-stone-950">Build ➜ Firestore Database</strong> પર ક્લિક કરો.</li>
+                          <li>ત્યાં દેખાતા મોટા <strong className="font-black text-stone-950 underline">"Create database"</strong> બટન પર ક્લિક કરો.</li>
+                          <li>ડેટાબેઝ આઈડી <strong className="font-bold text-stone-950">(default)</strong> રાખીને Next કરો.</li>
+                          <li>પછી <strong className="font-bold text-stone-950">"Start in test mode"</strong> સિલેક્ટ કરો જેથી બધા કમ્પ્યુટરમાંથી એન્ટ્રી થઈ શકે.</li>
+                          <li>ડેટાબેઝ ચાલુ થઈ જાય એટલે અહીં આવીને નીચે આપેલું <strong className="font-bold text-stone-950">🔄 Retry Connection</strong> બટન દબાવો!</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-rose-800/90 font-extrabold uppercase tracking-widest mt-2.5 flex flex-wrap gap-x-5 gap-y-1.5 leading-relaxed">
+                    <span className="text-stone-900">💡 CHECKLIST FOR MULTI-PC SYNC:</span>
+                    <span>1. Enable Cloud Firestore in Test Mode</span>
+                    <span>2. Ensure both PCs are connected to the internet</span>
+                    <span>3. Changes on any PC will push to all screens instantly</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="shrink-0">
+              <button 
+                onClick={() => {
+                  setSyncStatus('syncing');
+                  setSyncError(null);
+                  setTimeout(() => {
+                    window.dispatchEvent(new Event('online'));
+                  }, 100);
+                }} 
+                className="px-5 py-3.5 bg-stone-955 text-white hover:bg-stone-900 text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 whitespace-nowrap flex items-center gap-2 border border-stone-800"
+              >
+                <span>🔄 Retry Connection</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-[1800px] mx-auto px-4 md:px-6 py-2 md:py-6 flex-1 w-full relative">
         <motion.div

@@ -16,7 +16,16 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+// Initialize Firestore (support optional custom databaseId if configured)
+const dbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)"
+  ? firebaseConfig.firestoreDatabaseId
+  : undefined;
+
+export const db = dbId 
+  ? getFirestore(app, dbId)
+  : getFirestore(app);
+
 export const auth = getAuth(app);
 
 export enum OperationType {
